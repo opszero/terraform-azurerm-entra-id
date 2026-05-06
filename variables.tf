@@ -26,6 +26,10 @@ variable "users" {
     show_in_address_list        = optional(bool)
     disable_password_expiration = optional(bool, false)
     disable_strong_password     = optional(bool, false)
+    role_assignments            = optional(list(object({
+      role_definition_name = string
+      scope                = string
+    })), [])
   }))
   default = {}
 }
@@ -44,6 +48,10 @@ variable "groups" {
     external_members        = optional(list(string), [])
     owners                  = optional(list(string), [])
     external_owners         = optional(list(string), [])
+    role_assignments        = optional(list(object({
+      role_definition_name = string
+      scope                = string
+    })), [])
   }))
   default  = {}
   nullable = false
@@ -51,7 +59,7 @@ variable "groups" {
   validation {
     condition = alltrue([
       for k, g in var.groups :
-      g.mail_enabled ? g.mail_nickname != null || true : true
+      g.mail_enabled ? g.mail_nickname != null : true
     ])
     error_message = "Mail-enabled groups should have a mail_nickname set."
   }

@@ -22,6 +22,28 @@ locals {
   active_role_display_names = toset([
     for ra in values(var.directory_role_assignments) : ra.role_display_name
   ])
+
+  user_role_assignments = merge([
+    for user_key, user in var.users : {
+      for i, ra in user.role_assignments :
+      "${user_key}:${i}" => {
+        user_key             = user_key
+        role_definition_name = ra.role_definition_name
+        scope                = ra.scope
+      }
+    }
+  ]...)
+
+  group_role_assignments = merge([
+    for group_key, group in var.groups : {
+      for i, ra in group.role_assignments :
+      "${group_key}:${i}" => {
+        group_key            = group_key
+        role_definition_name = ra.role_definition_name
+        scope                = ra.scope
+      }
+    }
+  ]...)
 }
 
 # ─── Users ─────────────────────────────────────────────────────────────────────
@@ -117,15 +139,15 @@ resource "azuread_application" "this" {
 resource "azuread_service_principal" "this" {
   for_each = { for k, v in var.applications : k => v if v.create_service_principal }
 
-  application_id = azuread_application.this[each.key].application_id
+  client_id = azuread_application.this[each.key].client_id
 }
 
 resource "azuread_application_password" "this" {
   for_each = var.application_passwords
 
-  application_object_id = azuread_application.this[each.value.application_key].object_id
-  display_name          = each.value.display_name
-  end_date_relative     = each.value.end_date_relative
+  application_id = azuread_application.this[each.value.application_key].object_id
+  display_name   = each.value.display_name
+  end_date       = timeadd(plantimestamp(), each.value.end_date_relative)
 }
 
 # ─── Directory Roles ───────────────────────────────────────────────────────────
@@ -140,6 +162,24 @@ resource "azuread_directory_role_assignment" "this" {
 
   role_id             = azuread_directory_role.this[each.value.role_display_name].object_id
   principal_object_id = each.value.principal_object_id
+}
+
+# ─── RBAC Role Assignments ─────────────────────────────────────────────────────
+
+resource "azurerm_role_assignment" "users" {
+  for_each = local.user_role_assignments
+
+  principal_id         = azuread_user.this[each.value.user_key].object_id
+  role_definition_name = each.value.role_definition_name
+  scope                = each.value.scope
+}
+
+resource "azurerm_role_assignment" "groups" {
+  for_each = local.group_role_assignments
+
+  principal_id         = azuread_group.this[each.value.group_key].object_id
+  role_definition_name = each.value.role_definition_name
+  scope                = each.value.scope
 }
 
 # ─── Guest Invitations ─────────────────────────────────────────────────────────

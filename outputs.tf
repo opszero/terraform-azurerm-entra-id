@@ -30,7 +30,7 @@ output "application_object_ids" {
 
 output "application_client_ids" {
   description = "Map of application keys to their client (application) IDs."
-  value       = { for k, v in azuread_application.this : k => v.application_id }
+  value       = { for k, v in azuread_application.this : k => v.client_id }
 }
 
 output "service_principal_object_ids" {
@@ -49,9 +49,17 @@ output "application_password_expiry" {
   value       = { for k, v in azuread_application_password.this : k => v.end_date }
 }
 
+output "role_assignment_ids" {
+  description = "Map of role assignment keys to their Azure resource IDs."
+  value = merge(
+    { for k, v in azurerm_role_assignment.users : k => v.id },
+    { for k, v in azurerm_role_assignment.groups : k => v.id }
+  )
+}
+
 output "guest_invitation_redemption_urls" {
   description = "Map of guest invitation keys to their redemption URLs."
-  value       = { for k, v in azuread_invitation.this : k => v.redemption_url }
+  value       = { for k, v in azuread_invitation.this : k => v.redeem_url }
 }
 
 output "guest_user_object_ids" {
