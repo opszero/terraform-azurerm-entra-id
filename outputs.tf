@@ -66,3 +66,14 @@ output "guest_user_object_ids" {
   description = "Map of guest invitation keys to the invited user object IDs."
   value       = { for k, v in azuread_invitation.this : k => v.user_id }
 }
+
+
+output "application_passwords" {
+  value = {
+    for k, v in azuread_application_password.this :
+    k => {
+      value = v.value
+    }
+  }
+  sensitive = true
+}

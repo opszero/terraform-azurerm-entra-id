@@ -142,13 +142,13 @@ resource "azuread_service_principal" "this" {
   client_id = azuread_application.this[each.key].client_id
 }
 
-resource "azuread_application_password" "this" {
-  for_each = var.application_passwords
+  resource "azuread_application_password" "this" {
+    for_each = var.application_passwords
 
-  application_id = azuread_application.this[each.value.application_key].object_id
-  display_name   = each.value.display_name
-  end_date       = timeadd(plantimestamp(), each.value.end_date_relative)
-}
+    application_id =  azuread_application.this[each.value.application_key].id
+    display_name   = each.value.display_name
+    end_date       = timeadd(plantimestamp(), each.value.end_date_relative)
+  }
 
 # ─── Directory Roles ───────────────────────────────────────────────────────────
 
