@@ -304,6 +304,7 @@ Apache 2.0 — see [LICENSE](LICENSE).
 
 [opsZero](https://opszero.com) provides software and consulting for Cloud + AI. With our decade plus of experience scaling some of the world's most innovative companies we have developed deep expertise in Kubernetes, DevOps, FinOps, and Compliance.
 
+
 Our software and consulting solutions enable organizations to:
 
 - migrate workloads to the Cloud
